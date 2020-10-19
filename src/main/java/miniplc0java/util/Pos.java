@@ -1,5 +1,7 @@
 package miniplc0java.util;
 
+import java.util.Objects;
+
 public class Pos {
     public Pos(int row, int col) {
         this.row = row;
@@ -20,5 +22,11 @@ public class Pos {
     @Override
     public String toString() {
         return new StringBuilder().append("Pos(row: ").append(row).append(", col: ").append(col).append(")").toString();
+    }
+
+    public static void main(String[] args) {
+        Pos p1=new Pos(1,2);
+        Pos p2=new Pos(1,2);
+
     }
 }
