@@ -252,9 +252,9 @@ public final class Analyser {
                 Initinized=true;
             }
             addSymbol(nameToken.getValueString(),Initinized,false,nameToken.getStartPos());
-            if (!Initinized)
-                instructions.add(new Instruction(Operation.LIT,0));
             expect(TokenType.Semicolon);
+            if (!Initinized) //var c;
+                instructions.add(new Instruction(Operation.LIT,0));
         }
     }
 
@@ -329,10 +329,11 @@ public final class Analyser {
  * todo:分析赋值语句   标识符 = 表达式;
  * */
     private void analyseAssignmentStatement() throws CompileError {
-        expect(TokenType.Ident);
+       Token nameToken= expect(TokenType.Ident);
         expect(TokenType.Equal);
         analyseExpression();
         expect(TokenType.Semicolon);
+        instructions.add(new Instruction(Operation.STO,symbolTable.get(nameToken.getValueString()).stackOffset));
     }
 
     /*
