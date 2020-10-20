@@ -86,7 +86,7 @@ public class Tokenizer {
             Pos beginPos = it.currentPos();
             int len = 0;
             StringBuilder sb = new StringBuilder();
-            while (isAlpha(it.peekChar())) {
+            while (isAlpha(it.peekChar())||isInt(it.peekChar())) {
                 char s = it.nextChar();
                 sb.append(s);
             }
@@ -105,8 +105,6 @@ public class Tokenizer {
                     return new Token(TokenType.Print, res, beginPos, endPos);
                 default:
                     return new Token(TokenType.Ident, res, beginPos, endPos);
-
-
             }
         } catch (Exception e) {
             throw new Error("Not implemented");
