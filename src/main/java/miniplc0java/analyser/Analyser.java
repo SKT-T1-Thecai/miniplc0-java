@@ -222,8 +222,8 @@ public final class Analyser {
         while (nextIf(TokenType.Const) != null) {
             // 变量名
             var nameToken = expect(TokenType.Ident);
-          //  if(symbolTable.get(nameToken.getValueString())==null)
-            //    throw new Error(nameToken.getValueString()+" is redefined");
+            if(symbolTable.get(nameToken.getValueString())!=null)
+                throw new Error(nameToken.getValueString()+" is redefined");
 
             // 等于号
             expect(TokenType.Equal);
@@ -245,6 +245,8 @@ public final class Analyser {
         while(nextIf(TokenType.Var)!=null)
         {
             Token nameToken=expect(TokenType.Ident);
+            if(symbolTable.get(nameToken.getValueString())!=null)
+                throw new Error(nameToken.getValueString()+" is redefined");
             boolean Initinized=false;
             if(nextIf(TokenType.Equal)!=null)
             {
@@ -330,6 +332,10 @@ public final class Analyser {
  * */
     private void analyseAssignmentStatement() throws CompileError {
        Token nameToken= expect(TokenType.Ident);
+       if(symbolTable.get(nameToken.getValueString())==null)
+           throw new Error("");
+       if(symbolTable.get(nameToken.getValueString()).isConstant)
+           throw  new Error("");
         expect(TokenType.Equal);
         analyseExpression();
         expect(TokenType.Semicolon);
@@ -380,6 +386,12 @@ public final class Analyser {
 
         if (check(TokenType.Ident)) {
             Token nameToken=next();
+            //-------------------------------------------------------------
+              if(symbolTable.get(nameToken.getValueString())==null)
+                throw new Error("iii");
+              if(!symbolTable.get(nameToken.getValueString()).isInitialized)
+                throw new Error("iii");
+
             int value = symbolTable.get(nameToken.getValueString()).stackOffset;
             instructions.add(new Instruction(Operation.LOD, value));
         } else if (check(TokenType.Uint)) {
