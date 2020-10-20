@@ -222,6 +222,8 @@ public final class Analyser {
         while (nextIf(TokenType.Const) != null) {
             // 变量名
             var nameToken = expect(TokenType.Ident);
+          //  if(symbolTable.get(nameToken.getValueString())==null)
+            //    throw new Error(nameToken.getValueString()+" is redefined");
 
             // 等于号
             expect(TokenType.Equal);
@@ -231,6 +233,8 @@ public final class Analyser {
 
             // 分号
             expect(TokenType.Semicolon);
+            addSymbol(nameToken.getValueString(),true,true,nameToken.getStartPos());
+
         }
     }
     /**
@@ -240,11 +244,16 @@ public final class Analyser {
     private void analyseVariableDeclaration() throws CompileError {
         while(nextIf(TokenType.Var)!=null)
         {
-            expect(TokenType.Ident);
+            Token nameToken=expect(TokenType.Ident);
+            boolean Initinized=false;
             if(nextIf(TokenType.Equal)!=null)
             {
                 analyseExpression();
+                Initinized=true;
             }
+            addSymbol(nameToken.getValueString(),Initinized,false,nameToken.getStartPos());
+            if (!Initinized)
+                instructions.add(new Instruction(Operation.LIT,0));
             expect(TokenType.Semicolon);
         }
     }
@@ -284,11 +293,20 @@ public final class Analyser {
      * todo:分析常表达式 ：  [符号] 无符号整数
      * */
     private void analyseConstantExpression() throws CompileError {
+        Token symbol = null;
         if(check(TokenType.Minus)||check(TokenType.Plus))
         {
-            next();
+             symbol=next();
         }
-        expect(TokenType.Uint);
+        int res=(int)expect(TokenType.Uint).getValue();
+
+        assert symbol != null;
+        if(symbol.getValueString().equals("-"))
+        {
+            res=-res;
+        }
+        instructions.add(new Instruction(Operation.LIT,res));
+
     }
     /**
      * todo:分析表达式 :     项{ 加法型运算符 项 }
@@ -297,8 +315,14 @@ public final class Analyser {
         analyseItem();
         while(check(TokenType.Minus)||check(TokenType.Plus))
         {
-            next();
+            Token symbol=next();
             analyseItem();
+            if(symbol.getValueString().equals("+"))
+            {
+                instructions.add(new Instruction(Operation.ADD));
+            }
+            else instructions.add(new Instruction(Operation.SUB));
+
         }
     }
 /**
@@ -329,8 +353,13 @@ public final class Analyser {
         analyseFactor();
         if(check(TokenType.Mult)||check(TokenType.Div))
         {
-            next();
+            Token symbol=next();
             analyseFactor();
+            if(symbol.getValueString().equals("*"))
+            {
+                instructions.add(new Instruction(Operation.MUL));
+            }
+            else instructions.add(new Instruction(Operation.DIV));
         }
     }
 
@@ -349,9 +378,12 @@ public final class Analyser {
         }
 
         if (check(TokenType.Ident)) {
-            next();
+            Token nameToken=next();
+            int value = symbolTable.get(nameToken.getValueString()).stackOffset;
+            instructions.add(new Instruction(Operation.LOD, value));
         } else if (check(TokenType.Uint)) {
-            next();
+            Token value=next();
+            instructions.add(new Instruction(Operation.LIT, (int)value.getValue()));
         } else if (check(TokenType.LParen)) {
             next();
             analyseExpression();
