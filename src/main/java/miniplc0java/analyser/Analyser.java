@@ -223,7 +223,7 @@ public final class Analyser {
             // 变量名
             var nameToken = expect(TokenType.Ident);
             if(symbolTable.get(nameToken.getValueString())!=null)
-                throw new Error(nameToken.getValueString()+" is redefined");
+                throw new AnalyzeError(ErrorCode.DuplicateDeclaration,nameToken.getStartPos());
 
             // 等于号
             expect(TokenType.Equal);
@@ -246,7 +246,7 @@ public final class Analyser {
         {
             Token nameToken=expect(TokenType.Ident);
             if(symbolTable.get(nameToken.getValueString())!=null)
-                throw new Error(nameToken.getValueString()+" is redefined");
+                throw new AnalyzeError(ErrorCode.DuplicateDeclaration,nameToken.getStartPos());
             boolean Initinized=false;
             if(nextIf(TokenType.Equal)!=null)
             {
@@ -333,12 +333,13 @@ public final class Analyser {
     private void analyseAssignmentStatement() throws CompileError {
        Token nameToken= expect(TokenType.Ident);
        if(symbolTable.get(nameToken.getValueString())==null)
-           throw new Error("");
+           throw new AnalyzeError(ErrorCode.NotDeclared,nameToken.getStartPos());
        if(symbolTable.get(nameToken.getValueString()).isConstant)
-           throw  new Error("");
+           throw new AnalyzeError(ErrorCode.AssignToConstant,nameToken.getStartPos());
         expect(TokenType.Equal);
         analyseExpression();
         expect(TokenType.Semicolon);
+        symbolTable.get(nameToken.getValueString()).isInitialized=true;
         instructions.add(new Instruction(Operation.STO,symbolTable.get(nameToken.getValueString()).stackOffset));
     }
 
@@ -388,9 +389,9 @@ public final class Analyser {
             Token nameToken=next();
             //-------------------------------------------------------------
               if(symbolTable.get(nameToken.getValueString())==null)
-                throw new Error("iii");
+                  throw new AnalyzeError(ErrorCode.NotDeclared,nameToken.getStartPos());
               if(!symbolTable.get(nameToken.getValueString()).isInitialized)
-                throw new Error("iii");
+                  throw new AnalyzeError(ErrorCode.NotInitialized,nameToken.getStartPos());
 
             int value = symbolTable.get(nameToken.getValueString()).stackOffset;
             instructions.add(new Instruction(Operation.LOD, value));
