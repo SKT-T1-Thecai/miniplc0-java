@@ -302,8 +302,8 @@ public final class Analyser {
         }
         int res=(int)expect(TokenType.Uint).getValue();
 
-        assert symbol != null;
-        if(symbol.getValueString().equals("-"))
+
+        if(symbol!=null&&symbol.getValueString().equals("-"))
         {
             res=-res;
         }
